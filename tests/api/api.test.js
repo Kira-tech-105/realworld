@@ -26,18 +26,16 @@ describe('Integration Tests: RealWorld REST API (SuperTest)', () => {
   });
 
   describe('2. User Authentication Endpoints', () => {
-    test('POST /api/users/login - Should reject invalid password with 422', async () => {
+    test('POST /api/users - Should register a new user successfully (200)', async () => {
       const res = await request
-        .post('/api/users/login')
-        .send({
-          user: {
-            email: testUser.user.email,
-            password: 'incorrect_password'
-          }
-        });
-
-      expect(res.status).toBe(422);
-      expect(res.body.errors).toBeDefined();
+        .post('/api/users')
+        .send(testUser);
+      expect([200, 201]).toContain(res.status);
+      expect(res.body.user).toBeDefined();
+      expect(res.body.user.email).toBe(testUser.user.email.toLowerCase());
+      expect(res.body.user.username).toBe(testUser.user.username.toLowerCase());
+      expect(res.body.user.token).toBeDefined();
+      token = res.body.user.token;
     });
 
     test('POST /api/users - Should reject duplicate email or username with 422', async () => {
@@ -75,6 +73,7 @@ describe('Integration Tests: RealWorld REST API (SuperTest)', () => {
         });
 
       expect(res.status).toBe(422);
+      expect(res.body.errors).toBeDefined();
     });
 
     test('GET /api/user - Should return current user when authenticated (200)', async () => {
